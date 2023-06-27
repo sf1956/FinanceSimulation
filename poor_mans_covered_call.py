@@ -1,109 +1,243 @@
-import matplotlib.pyplot as plt
 import numpy as np
-
-ticker = "qqq"
-
-def load_data(ticker, n_steps=50, scale=True, shuffle=True, lookup_step=10, 
-                test_size=0.2, feature_columns=['adjclose', 'volume', 'open', 'high', 'low']):
-    """
-    Loads data from Yahoo Finance source, as well as scaling, shuffling, normalizing and splitting.
-    Params:
-        ticker (str/pd.DataFrame): the ticker you want to load, examples include AAPL, TESL, etc.
-        n_steps (int): the historical sequence length (i.e window size) used to predict, default is 50
-        scale (bool): whether to scale prices from 0 to 1, default is True
-        shuffle (bool): whether to shuffle the data, default is True
-        lookup_step (int): the future lookup step to predict, default is 1 (e.g next day)
-        test_size (float): ratio for test data, default is 0.2 (20% testing data)
-        feature_columns (list): the list of features to use to feed into the model, default is everything grabbed from yahoo_fin
-    """
-    # see if ticker is already a loaded stock from yahoo finance
-    if isinstance(ticker, str):
-        # load it from yahoo_fin library
-        df = si.get_data(ticker)
-    elif isinstance(ticker, pd.DataFrame):
-        # already loaded, use it directly
-        df = ticker
-    else:
-        raise TypeError("ticker can be either a str or a `pd.DataFrame` instances")
-    # this will contain all the elements we want to return from this function
-    result = {}
-    # we will also return the original dataframe itself
-    result['df'] = df.copy()
-    # make sure that the passed feature_columns exist in the dataframe
-    for col in feature_columns:
-        assert col in df.columns, f"'{col}' does not exist in the dataframe."
-    if scale:
-        column_scaler = {}
-        # scale the data (prices) from 0 to 1
-        for column in feature_columns:
-            scaler = preprocessing.MinMaxScaler()
-            df[column] = scaler.fit_transform(np.expand_dims(df[column].values, axis=1))
-            column_scaler[column] = scaler
-        # add the MinMaxScaler instances to the result returned
-        result["column_scaler"] = column_scaler
-    # add the target column (label) by shifting by `lookup_step`
-    df['future'] = df['adjclose'].shift(-lookup_step)
-    # last `lookup_step` columns contains NaN in future column
-    # get them before droping NaNs
-    last_sequence = np.array(df[feature_columns].tail(lookup_step))
-    # drop NaNs
-    df.dropna(inplace=True)
-    sequence_data = []
-    sequences = deque(maxlen=n_steps)
-    for entry, target in zip(df[feature_columns].values, df['future'].values):
-        sequences.append(entry)
-        if len(sequences) == n_steps:
-            sequence_data.append([np.array(sequences), target])
-    # get the last sequence by appending the last `n_step` sequence with `lookup_step` sequence
-    # for instance, if n_steps=50 and lookup_step=10, last_sequence should be of 60 (that is 50+10) length
-    # this last_sequence will be used to predict future stock prices not available in the dataset
-    last_sequence = list(sequences) + list(last_sequence)
-    last_sequence = np.array(last_sequence)
-    # add to result
-    result['last_sequence'] = last_sequence
-    # construct the X's and y's
-    X, y = [], []
-    for seq, target in sequence_data:
-        X.append(seq)
-        y.append(target)
-    # convert to numpy arrays
-    X = np.array(X)
-    y = np.array(y)
-    # reshape X to fit the neural network
-    X = X.reshape((X.shape[0], X.shape[2], X.shape[1]))
-    # split the dataset
-    result["X_train"], result["X_test"], result["y_train"], result["y_test"] = train_test_split(X, y, 
-                                                                               test_size=test_size, shuffle=shuffle)
-    # return the result
-    return result
+import pandas as pd
+import datetime as dt
+import matplotlib.pyplot as plt
 
 
-# load the data
-data = load_data(ticker, N_STEPS, lookup_step=LOOKUP_STEP, test_size=TEST_SIZE, feature_columns=FEATURE_COLUMNS)
-# save the dataframe
-data["df"].to_csv(ticker_data_filename)
+"""
+FUNCTIONS Section
+"""
 
-sT = np.arange(0, 40, 5)
-k=15
-s0=10
-c=2
-y0 = np.zeros(len(sT))
-y1= sT-s0   #stock only
-y2 = (abs(sT - k) + sT - k) / 2 - c #long a call
-y3= y1 - y2  #covered call
-plt.ylim(-10, 30)
-plt.plot(sT, y1)
-plt.plot(sT, y2)
-plt.plot(sT, y3, 'red')
-plt.plot(sT, y0, 'b-.')
-plt.plot([k,k], [-10,10], 'black')
-plt.title('Covered call ( long one share and short one call)')
-plt.xlabel('Stock price')
-plt.ylabel('Profit (loss)')
-plt.annotate('Stock only (long one share)', xy=(24,15), xytext=(15,20),
-             arrowprops=dict(facecolor='blue', shrink=0.01),)
-plt.annotate('Long one share, short a call', xy=(10,4), xytext=(9,25),
-             arrowprops=dict(facecolor='red',shrink=0.01),)
-plt.annotate('Exercise price= '+str(k), xy=(k+0.2,-10+0.5))
+def extract_rows_with_columns_equal_to_a_certain_value(df, column_name, value):
 
+  """
+  Creates a dataframe of rows with columns equal to a certain value in another.
+
+  Args:
+    df: The dataframe to be filtered.
+    column_name: The name of the column to be checked for value.
+    value: The value to be filtered for.
+
+  Returns:
+    A dataframe of the rows in df where the column_name column is equal to value.
+  """
+
+  filtered_df = df[df[column_name] == value]
+  return filtered_df
+
+##########################################################
+
+def return_min_lt_A_in_col_X(df, A, X):
+    
+  """
+
+This function calculates the smallest value which is larger than A in column X of a DataFrame.
+
+Args:
+    df (pandas.DataFrame): The original DataFrame.
+    A (int): The value of A.
+    X (str): The name of the column X.
+
+Returns:
+    float: The smallest value.
+  """
+
+    # Calculate the smallest value in column X that is larger than A.
+
+  sm_lt_A = df[X].where(df[X] > A).min()
+
+
+# Return the value.
+
+  return sm_lt_A
+
+###################################################
+
+"""
+This function creates a DataFrame from an original DataFrame of rows with the smallest value which is larger than A in column X.
+
+Args:
+    df (pandas.DataFrame): The original DataFrame.
+    A (int): The value of A.
+    X (str): The name of the column X.
+
+Returns:
+    pandas.DataFrame: The filtered DataFrame.
+"""
+
+def create_df_with_smalles_value_larger_then_A_of_column_X(df, A, X):
+
+    # Calculate the smallest value in column X that is larger than A.
+
+    smallest_values = df[X].where(df[X] > A).min()
+
+    # Filter the original DataFrame to only include the rows where the value in column X is equal to the smallest value.
+    filtered_df = df[df[X] == smallest_values]
+
+    # Return the filtered DataFrame.
+    return filtered_df
+
+############################################################
+
+
+def calculate_date(date_str, days):
+
+    # Convert the date string to a datetime object.
+    date = dt.datetime.strptime(date_str, "%Y-%m-%d")
+
+    # Add the specified number of days to the datetime object.
+    new_date = date + dt.timedelta(days=days)
+
+    # Return the new date in the same format as the original date string.
+    return new_date.strftime("%Y-%m-%d")
+
+##################################
+
+def save_dataframe_to_csv(df, filename):
+
+    # Save the DataFrame to a CSV file.
+    df.to_csv(filename, index=False)
+
+#######################################################
+
+# End FUNCTIONS Section
+
+# read data to DF
+
+df = pd.read_csv('./data/2015/qqq_eod_201501.txt')
+
+df.rename(columns={'[QUOTE_UNIXTIME]':'QUOTE_UNIXTIME', ' [QUOTE_READTIME]':'QUOTE_READTIME', ' [QUOTE_DATE]':'QUOTE_DATE',
+       ' [QUOTE_TIME_HOURS]':'QUOTE_TIME_HOURS', ' [UNDERLYING_LAST]':'UNDERLYING_LAST', ' [EXPIRE_DATE]':'EXPIRE_DATE',
+       ' [EXPIRE_UNIX]':'EXPIRE_UNIX', ' [DTE]':'DTE', ' [C_DELTA]':'C_DELTA', ' [C_GAMMA]':'C_GAMMA', ' [C_VEGA]':'C_VEGA',
+       ' [C_THETA]':'C_THETA', ' [C_RHO]':'C_RHO', ' [C_IV]':'C_IV', ' [C_VOLUME]':'C_VOLUME', ' [C_LAST]':'C_LAST',
+       ' [C_SIZE]':'C_SIZE', ' [C_BID]':'C_BID', ' [C_ASK]':'C_ASK', ' [STRIKE]':'STRIKE', ' [P_BID]':'P_BID',
+       ' [P_ASK]':'P_ASK', ' [P_SIZE]':'P_SIZE', ' [P_LAST]':'P_LAST', ' [P_DELTA]':'P_DELTA', ' [P_GAMMA]':'P_GAMMA',
+       ' [P_VEGA]':'P_VEGA', ' [P_THETA]':'P_VEGA', ' [P_RHO]':'P_RHO', ' [P_IV]':'P_IV', ' [P_VOLUME]':'P_VOLUME',
+       ' [STRIKE_DISTANCE]':'STRIKE_DISTANCE', ' [STRIKE_DISTANCE_PCT]':'STRIKE_DISTANCE_PCT'}, inplace=True)
+
+# d_df is a decimated DF with the required columns
+
+d_df = df[['QUOTE_DATE', 'UNDERLYING_LAST', 'EXPIRE_DATE', 'DTE', 'STRIKE', 'C_ASK']]
+
+class Option(object):
+      def __init__(self, symbol='qqq', strike_price=100, stock_price=100, option_price=10, expiration_date=dt.date.fromisoformat('2023-12-04')):
+        self.symbol = symbol
+        self.strike_price = strike_price
+        self.stock_price = stock_price
+        self.option_price = option_price
+        self.expiration_date = expiration_date
+
+
+# clear white spaces of dates columns
+
+d_df.QUOTE_DATE = d_df.QUOTE_DATE.str.strip()
+
+d_df.EXPIRE_DATE = d_df.EXPIRE_DATE.str.strip()
+
+
+# change to rolling date !!!!
+
+trade_date = d_df.loc[0, 'QUOTE_DATE']
+initial_stock_price = d_df.loc[0, 'UNDERLYING_LAST']
+
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+""" 
+Sell (Write) Call Option Section
+"""
+# DTE for sell option is the DTE >= value A
+
+# find expiration date
+
+# A is the upper limit of the desired number of days to expiration_date
+
+A=30
+
+DTE = return_min_lt_A_in_col_X(d_df, A, 'DTE')
+
+expiration_date = calculate_date(trade_date, DTE-3)     #check why this is correct!!!!
+
+# extract df with the calculated expiration_date
+
+df_expiration_date = extract_rows_with_columns_equal_to_a_certain_value(d_df, 'EXPIRE_DATE', expiration_date)
+
+#calculate Strike price
+
+Target_strike_stock_price_PCT = 0.05
+target_strike_price = initial_stock_price * (1 + Target_strike_stock_price_PCT)
+strike_price = return_min_lt_A_in_col_X(df_expiration_date, target_strike_price, 'STRIKE')
+
+# Create df of rows with strike_price in 'STRIKE' column
+
+df_strike = extract_rows_with_columns_equal_to_a_certain_value(df_expiration_date, 'STRIKE', strike_price)
+
+#reset the indec of df_strike
+
+df_strike.reset_index(drop=True, inplace=True)
+
+"""
+Option_Sell = Option(strike_price=df_strike.loc[0,'STRIKE'],
+                    stock_price=df_strike.loc[0,'UNDERLYING_LAST'],
+                    option_price=df_strike.loc[0,'C_LAST'],
+                    expiration_date=df_strike.loc[0,'EXPIRE_DATE'])
+
+
+# Save the DataFrame to a CSV file called "dataframe.csv".
+save_dataframe_to_csv(d_df, "./data/dataframe.csv")
+
+"""
+"""
+plt.plot(df_strike['C_ASK'])
 plt.show()
+plt.plot(df_strike['UNDERLYING_LAST'])
+plt.show()
+print(Option_Sell)
+"""
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+""" 
+Buy Call Option Section
+"""
+# DTE for sell option is the DTE >= value A
+
+# find expiration date
+
+# A is the upper limit of the desired number of days to expiration_date
+
+A=700
+
+DTE = return_min_lt_A_in_col_X(d_df, A, 'DTE')
+
+expiration_date = calculate_date(trade_date, DTE+28)     #check why this is correct!!!!
+
+# extract df with the calculated expiration_date
+
+df_expiration_date = extract_rows_with_columns_equal_to_a_certain_value(d_df, 'EXPIRE_DATE', expiration_date)
+
+#calculate Strike price
+
+Target_strike_stock_price_PCT = 0
+target_strike_price = initial_stock_price * (1 + Target_strike_stock_price_PCT)
+strike_price = return_min_lt_A_in_col_X(df_expiration_date, target_strike_price, 'STRIKE')
+
+# Create df of rows with strike_price in 'STRIKE' column
+
+df_strike = extract_rows_with_columns_equal_to_a_certain_value(df_expiration_date, 'STRIKE', strike_price)
+
+#reset the indec of df_strike
+
+df_strike.reset_index(drop=True, inplace=True)
+
+
+# plot option & stock price
+
+fig, axs = plt.subplots(2, 1, sharex=True)
+axs[0].plot(df_strike['C_BID'])
+axs[0].set_title('Buy Call Option Price')
+axs[0].grid(True)
+axs[1].plot(df_strike['UNDERLYING_LAST'])
+axs[1].set_title('Stock Price')
+axs[1].grid(True)
+plt.show()
+
+
+
