@@ -59,4 +59,8 @@ def get_option_data(month=1, year=2015, cols=None):
 
     d_df.loc[:, "EXPIRE_DATE"] = d_df.EXPIRE_DATE.str.strip().copy()
 
+    d_df.loc[:, "QUOTE_DATE"] = pd.to_datetime(d_df.QUOTE_DATE)
+
+    d_df.loc[:, "EXPIRE_DATE"] = pd.to_datetime(d_df.EXPIRE_DATE)
+
     return d_df

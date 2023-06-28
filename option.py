@@ -1,4 +1,5 @@
 import datetime as dt
+import pandas as pd
 
 
 class Option(object):
@@ -8,7 +9,7 @@ class Option(object):
         strike_price=100,
         # stock_price=100,
         option_price=10,
-        expiration_date=dt.date.fromisoformat("2023-12-04"),
+        expiration_date=pd.Timestamp("2023-12-04"),
     ):
         self.symbol = symbol
         self.strike_price = strike_price
@@ -22,7 +23,8 @@ class Option(object):
             symbol=symbol,
             strike_price=series.STRIKE,
             option_price=series.C_ASK,
-            expiration_date=dt.date.fromisoformat(series.EXPIRE_DATE),
+            expiration_date=series.EXPIRE_DATE,
+            # expiration_date=pd.Timestamp(dt.date.fromisoformat(series.EXPIRE_DATE)),
         )
 
     def __str__(self):
