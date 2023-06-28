@@ -17,11 +17,11 @@ class Wallet(object):
 
     def buy_call_option(self, option):
         self.call_options_buy.append(option)
-        self.amount -= option.option_price
+        self.amount -= option.option_price_at_purchase
 
     def sell_call_option(self, option):
         self.call_options_sell.append(option)
-        self.amount += option.option_price
+        self.amount += option.option_price_at_purchase
 
     def realize_sell_call_option(self, ind=0):
         self.amount += self.call_options_sell[ind].strike_price
@@ -42,6 +42,6 @@ class Wallet(object):
 
     def __str__(self):
         return f"amount: {self.amount} \n\
-    call_options_buy: <{' | '.join(str(itm) for itm in self.call_options_buy)}> \n\
-    call_options_sell: <{' | '.join(str(itm) for itm in self.call_options_sell)}> \n\
-    stocks: <{' | '.join(str(itm) for itm in self.stocks)}>"
+call_options_buy: \n<{' | '.join(str(itm) for itm in self.call_options_buy)}> \n\
+call_options_sell: \n<{' | '.join(str(itm) for itm in self.call_options_sell)}> \n\
+stocks: <{' | '.join(str(itm) for itm in self.stocks)}>"
