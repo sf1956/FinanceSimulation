@@ -15,6 +15,13 @@ def example_long_option():
         option_price_at_purchase=50.51,
         expiration_date=pd.Timestamp("2017-01-20"),
     )
+    # return {
+    #     "symbol": "qqq",
+    #     "strike_price": 55.0,
+    #     "stock_price_at_purchase": 103.06,
+    #     "option_price_at_purchase": 50.51,
+    #     "expiration_date": pd.Timestamp("2017-01-20"),
+    # }
 
 
 @pytest.fixture
@@ -28,7 +35,7 @@ def example_short_option():
     )
 
 
-def test_strategy(example_long_option, example_short_option):
+def test_strategy(example_long_option: Option, example_short_option: Option):
     d_df = get_option_data()
     poor_wallet = Wallet()
     strategy = Strategy(
