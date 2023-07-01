@@ -42,5 +42,6 @@ def test_strategy(example_long_option, example_short_option):
         daily_option_prec=0.5,
     )
 
+    assert strategy.wallet.amount == -17.4
     assert strategy.wallet.call_options_buy[0] == example_long_option
     assert strategy.wallet.call_options_sell[0] == example_short_option
