@@ -135,11 +135,7 @@ class Strategy(object):
             target_dte=target_dte,
             target_strike_over_stock_prec=target_strike_over_stock_prec,
         )
-        # short = self.filter_option_by_dte(df=short, target_dte=target_dte)
-        # short = self.filter_option_by_strike_over_stock(
-        #     df=short, target_strike_over_stock_prec=target_strike_over_stock_prec
-        # )
-        # short = short.squeeze()
+
         wallet.sell_call_option(Option.from_data_series(short))
 
     def open_long_position(
@@ -156,14 +152,7 @@ class Strategy(object):
             target_dte=target_dte,
             target_strike_over_stock_prec=target_strike_over_stock_prec,
         )
-        # long = self.filter_option_by_trade_date(
-        #     df=df, target_trade_date=target_trade_date
-        # )
-        # long = self.filter_option_by_dte(df=long, target_dte=target_dte)
-        # long = self.filter_option_by_strike_over_stock(
-        #     df=long, target_strike_over_stock_prec=target_strike_over_stock_prec
-        # )
-        # long = long.squeeze()
+
         wallet.buy_call_option(Option.from_data_series(long))
 
     def daily_roll(self, df, target_trade_date, ind=0):
