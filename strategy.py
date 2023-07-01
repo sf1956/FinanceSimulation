@@ -3,6 +3,7 @@ import datetime as dt
 from wallet import Wallet
 from option import Option
 from filter_utils import filter_option_df
+from option_operation import open_short_position_, open_long_position_
 
 
 class Strategy(object):
@@ -26,7 +27,7 @@ class Strategy(object):
         self.long_target_strike_over_stock_prec = long_target_strike_over_stock_prec
         self.daily_option_prec = daily_option_prec
 
-        self.open_short_position(
+        open_short_position_(
             df=self.df,
             wallet=self.wallet,
             target_trade_date=self.target_trade_date,
@@ -34,47 +35,13 @@ class Strategy(object):
             target_strike_over_stock_prec=self.short_target_strike_over_stock_prec,
         )
 
-        self.open_long_position(
+        open_long_position_(
             df=self.df,
             wallet=self.wallet,
             target_trade_date=self.target_trade_date,
             target_dte=self.long_target_dte,
             target_strike_over_stock_prec=self.long_target_strike_over_stock_prec,
         )
-
-    def open_short_position(
-        self,
-        df,
-        wallet,
-        target_trade_date,
-        target_dte,
-        target_strike_over_stock_prec,
-    ):
-        short = filter_option_df(
-            df=df,
-            target_trade_date=target_trade_date,
-            target_dte=target_dte,
-            target_strike_over_stock_prec=target_strike_over_stock_prec,
-        )
-
-        wallet.sell_call_option(Option.from_data_series(short))
-
-    def open_long_position(
-        self,
-        df,
-        wallet,
-        target_trade_date,
-        target_dte,
-        target_strike_over_stock_prec,
-    ):
-        long = filter_option_df(
-            df=df,
-            target_trade_date=target_trade_date,
-            target_dte=target_dte,
-            target_strike_over_stock_prec=target_strike_over_stock_prec,
-        )
-
-        wallet.buy_call_option(Option.from_data_series(long))
 
     def daily_roll(self, df, target_trade_date, ind=0):
         orig_option = self.wallet.call_options_sell[ind]
