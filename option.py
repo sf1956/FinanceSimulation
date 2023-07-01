@@ -30,3 +30,10 @@ class Option(object):
 
     def __str__(self):
         return f"option: {self.symbol}:\n strike:{self.strike_price}\n expiration:{self.expiration_date}\n (option at purchase:{self.option_price_at_purchase},\n stock at purchase:{self.stock_price_at_purchase})"
+
+    def __eq__(self, other):
+        return (self.symbol, self.strike_price, self.expiration_date) == (
+            other.symbol,
+            other.strike_price,
+            other.expiration_date,
+        )
