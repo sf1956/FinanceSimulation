@@ -4,6 +4,10 @@ from wallet import Wallet
 from option import Option
 from filter_utils import filter_option_df
 from option_operation import open_short_position_, open_long_position_
+from loguru import logger
+import sys
+
+# logger.add(sys.stderr, backtrace=True, diagnose=True)
 
 
 class Strategy(object):
@@ -18,6 +22,11 @@ class Strategy(object):
         long_target_strike_over_stock_prec=1.0,
         daily_option_prec=0.5,
     ):
+        logger.info(
+            f"Strategy __init__: target_trade_date:{target_trade_date}, short_target_dte:{short_target_dte}, \
+                long_target_dte:{long_target_dte}, short_target_strike_over_stock_prec:{short_target_strike_over_stock_prec}, \
+                    long_target_strike_over_stock_prec:{long_target_strike_over_stock_prec}, daily_option_prec:{daily_option_prec}"
+        )
         self.df = df
         self.wallet = wallet
         self.target_trade_date = target_trade_date

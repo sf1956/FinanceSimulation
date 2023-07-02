@@ -23,7 +23,9 @@ class Option(object):
             symbol=symbol,
             strike_price=series.STRIKE,
             stock_price_at_purchase=series.UNDERLYING_LAST,
-            option_price_at_purchase=series.C_ASK,
+            option_price_at_purchase=series.C_LAST
+            if series.C_LAST > 0
+            else ((series.C_ASK + series.C_BID) / 2),  # series.C_ASK
             expiration_date=series.EXPIRE_DATE,
             # expiration_date=pd.Timestamp(dt.date.fromisoformat(series.EXPIRE_DATE)),
         )
