@@ -4,7 +4,16 @@ import datetime as dt
 
 def get_option_data(month=1, year=2015, cols=None):
     cols = (
-        ["QUOTE_DATE", "UNDERLYING_LAST", "EXPIRE_DATE", "DTE", "STRIKE", "C_ASK"]
+        [
+            "QUOTE_DATE",
+            "UNDERLYING_LAST",
+            "EXPIRE_DATE",
+            "DTE",
+            "STRIKE",
+            "C_ASK",
+            "C_LAST",
+            "C_BID",
+        ]
         if cols is None
         else cols
     )
