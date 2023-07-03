@@ -65,10 +65,10 @@ class Strategy(object):
             target_strike=orig_option_strike_price,
         )
 
-        if (
+        if (  # TODO: check condition!
             updated_option.option_price_at_purchase
-            <= orig_option_price_at_purchase * self.daily_option_prec
+            >= orig_option_price_at_purchase * self.daily_option_prec
         ):
-            self.wallet.close_sell_call_option(
-                updated_option.option_price_at_purchase, ind=ind
+            self.wallet.roll_buy_call_option(
+                new_option=updated_option, update_option=updated_option, ind=ind
             )

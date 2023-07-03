@@ -16,13 +16,6 @@ def example_long_option():
         option_price_at_purchase=11.1,
         expiration_date=pd.Timestamp("2017-01-20"),
     )
-    # return {
-    #     "symbol": "qqq",
-    #     "strike_price": 55.0,
-    #     "stock_price_at_purchase": 103.06,
-    #     "option_price_at_purchase": 50.51,
-    #     "expiration_date": pd.Timestamp("2017-01-20"),
-    # }
 
 
 @pytest.fixture
