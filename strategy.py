@@ -53,22 +53,40 @@ class Strategy(object):
         )
 
     def daily_roll(self, df, target_trade_date, ind=0):
-        orig_option = self.wallet.call_options_sell[ind]
+        orig_option = self.wallet.call_options_buy[ind]
         orig_option_price_at_purchase = orig_option.option_price_at_purchase
         orig_option_expiration_date = orig_option.expiration_date
         orig_option_strike_price = orig_option.strike_price
 
-        updated_option = filter_option_df(
-            df=df,
-            target_trade_date=target_trade_date,
-            target_expiration_date=orig_option_expiration_date,
-            target_strike=orig_option_strike_price,
+        new_option = Option.from_data_series(
+            filter_option_df(
+                df=df,
+                target_trade_date=target_trade_date,
+                target_dte=self.short_target_dte,
+                target_strike=orig_option_strike_price,
+            )
         )
 
-        if (
+        updated_option = Option.from_data_series(
+            filter_option_df(
+                df=df,
+                target_trade_date=target_trade_date,
+                target_expiration_date=orig_option_expiration_date,
+                target_strike=orig_option_strike_price,
+            )
+        )
+        logger.info(
+            f"updated_option.option_price_at_purchase:{updated_option.option_price_at_purchase}"
+        )
+        logger.info(f"orig_option_price_at_purchase:{orig_option_price_at_purchase}")
+        logger.info(f"self.daily_option_prec:{self.daily_option_prec}")
+        if (  # TODO: check condition!
             updated_option.option_price_at_purchase
             <= orig_option_price_at_purchase * self.daily_option_prec
         ):
-            self.wallet.close_sell_call_option(
-                updated_option.option_price_at_purchase, ind=ind
+            logger.info(f"rolling option")
+            self.wallet.roll_buy_call_option(
+                new_option=new_option, update_option=updated_option, ind=ind
             )
+        else:
+            logger.info("not rolling option")
