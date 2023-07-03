@@ -3,7 +3,7 @@ from strategy import Strategy
 from data_gen import get_option_data
 from option import Option
 import pandas as pd
-from loguru import logger
+from logger import logger
 import datetime as dt
 
 
@@ -37,8 +37,8 @@ class StrategyRunner(object):
             long_target_strike_over_stock_prec=long_target_strike_over_stock_prec,
             daily_option_prec=daily_option_prec,
         )
-        logger.debug(f"Trading date:{self.trading_date}")
-        logger.debug(f"{self.strategy.wallet}")
+        logger.info(f"Trading date:{self.trading_date}")
+        logger.debug(f"ֿ\n{self.strategy.wallet}")
 
     def next_trading_day(self):
         self.trading_date = self.trading_date + dt.timedelta(days=1)
@@ -46,5 +46,5 @@ class StrategyRunner(object):
             logger.info("Passed last availible trading day")
             return
         self.strategy.daily_roll(self.d_df, self.trading_date)
-        logger.debug(f"Trading date:{self.trading_date}")
+        logger.info(f"Trading date:{self.trading_date}")
         logger.debug(f"{self.strategy.wallet}")

@@ -1,5 +1,5 @@
 import pandas as pd
-from loguru import logger
+from logger import logger
 
 
 def filter_option_df_by_trade_date(df, target_trade_date):
@@ -96,5 +96,5 @@ def filter_option_df(
     if target_strike is not None:
         out = filter_option_df_by_strike(df=out, target_strike=target_strike)
     out = out.squeeze()
-    logger.debug(f"df:{out}")
+    # logger.debug(f"df:{out}")
     return out

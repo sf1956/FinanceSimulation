@@ -1,6 +1,6 @@
 from option import Option
 from stock import Stock
-from loguru import logger
+from logger import logger
 
 
 class Wallet(object):
