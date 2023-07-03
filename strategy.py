@@ -20,7 +20,7 @@ class Strategy(object):
         long_target_dte=700,
         short_target_strike_over_stock_prec=1.05,
         long_target_strike_over_stock_prec=1.0,
-        daily_option_prec=1000,
+        daily_option_prec=0.5,
     ):
         logger.info(
             f"Strategy __init__: target_trade_date:{target_trade_date}, short_target_dte:{short_target_dte}, \
