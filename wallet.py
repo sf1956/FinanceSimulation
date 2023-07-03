@@ -1,5 +1,6 @@
 from option import Option
 from stock import Stock
+from loguru import logger
 
 
 class Wallet(object):
@@ -17,10 +18,16 @@ class Wallet(object):
 
     def buy_call_option(self, option):
         self.call_options_buy.append(option)
+        logger.debug(
+            f"buy_call_option: amount({self.amount}) - option price({option.option_price_at_purchase}) = new amount({self.amount - option.option_price_at_purchase})"
+        )
         self.amount -= option.option_price_at_purchase
 
     def sell_call_option(self, option):
         self.call_options_sell.append(option)
+        logger.debug(
+            f"sell_call_option: amount({self.amount}) + option price({option.option_price_at_purchase}) = new amount({self.amount + option.option_price_at_purchase})"
+        )
         self.amount += option.option_price_at_purchase
 
     def realize_sell_call_option(self, ind=0):
@@ -35,12 +42,18 @@ class Wallet(object):
     def close_sell_call_option(
         self, updated_price, ind=0
     ):  # buy a call option to cancel out the call option you sold
+        logger.debug(
+            f"close_sell_call_option: amount({self.amount}) - updated_price({updated_price}) = new amount({self.amount - updated_price})"
+        )
         self.amount -= updated_price
         del self.call_options_sell[ind]
 
     def close_buy_call_option(
         self, updated_price, ind=0
     ):  # sell the call option you bought
+        logger.debug(
+            f"close_buy_call_option: amount({self.amount}) + updated_price({updated_price}) = new amount({self.amount + updated_price})"
+        )
         self.amount += updated_price
         del self.call_options_buy[ind]
 
