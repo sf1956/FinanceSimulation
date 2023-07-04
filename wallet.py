@@ -1,9 +1,10 @@
 from option import Option
 from stock import Stock
-from logger import logger
+from logger import logger, logger_wraps
 
 
 class Wallet(object):
+    @logger_wraps()
     def __init__(
         self, amount=0, call_options_sell=None, call_options_buy=None, stocks=None
     ):
@@ -16,6 +17,7 @@ class Wallet(object):
         )
         self.stocks = [] if stocks is None else stocks
 
+    @logger_wraps()
     def buy_call_option(self, option):
         self.call_options_buy.append(option)
         logger.debug(
@@ -23,6 +25,7 @@ class Wallet(object):
         )
         self.amount -= option.option_price_at_purchase
 
+    @logger_wraps()
     def sell_call_option(self, option):
         self.call_options_sell.append(option)
         logger.debug(
@@ -30,15 +33,18 @@ class Wallet(object):
         )
         self.amount += option.option_price_at_purchase
 
+    @logger_wraps()
     def realize_sell_call_option(self, ind=0):
         self.amount += self.call_options_sell[ind].strike_price
         del self.call_options_sell[ind]
 
+    @logger_wraps()
     def realize_buy_call_option(self, ind=0):
         self.amount -= self.call_options_buy[ind].strike_price
         self.stocks.append(Stock.from_option(self.call_options_buy[ind]))
         del self.call_options_buy[ind]
 
+    @logger_wraps()
     def close_sell_call_option(
         self, updated_price, ind=0
     ):  # buy a call option to cancel out the call option you sold
@@ -48,6 +54,7 @@ class Wallet(object):
         self.amount -= updated_price
         del self.call_options_sell[ind]
 
+    @logger_wraps()
     def close_buy_call_option(
         self, updated_price, ind=0
     ):  # sell the call option you bought
@@ -57,12 +64,14 @@ class Wallet(object):
         self.amount += updated_price
         del self.call_options_buy[ind]
 
+    @logger_wraps()
     def roll_sell_call_option(self, new_option, update_option, ind=0):
         self.close_sell_call_option(
             updated_price=update_option.option_price_at_purchase, ind=ind
         )
         self.sell_call_option(new_option)
 
+    @logger_wraps()
     def roll_buy_call_option(self, new_option, update_option, ind=0):
         self.close_buy_call_option(
             updated_price=update_option.option_price_at_purchase, ind=ind

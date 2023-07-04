@@ -1,7 +1,9 @@
 import pandas as pd
 import datetime as dt
+from logger import logger, logger_wraps
 
 
+@logger_wraps()
 def get_option_data(month=1, year=2015, cols=None):
     cols = (
         [

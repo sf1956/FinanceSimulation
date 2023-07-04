@@ -1,7 +1,8 @@
 import pandas as pd
-from logger import logger
+from logger import logger, logger_wraps
 
 
+@logger_wraps()
 def filter_option_df_by_trade_date(df, target_trade_date):
     df = df.loc[df.QUOTE_DATE >= target_trade_date, :].copy()
     min_trade_date = df.QUOTE_DATE.min()
@@ -17,6 +18,7 @@ def filter_option_df_by_trade_date(df, target_trade_date):
     return df
 
 
+@logger_wraps()
 def filter_option_df_by_dte(df, target_dte=30):
     df = df.loc[df.DTE <= target_dte, :].copy()
     max_dte = df.DTE.max()
@@ -30,6 +32,7 @@ def filter_option_df_by_dte(df, target_dte=30):
     return df
 
 
+@logger_wraps()
 def filter_option_df_by_expiration_date(df, target_expiration_date):
     df = df.loc[df.EXPIRE_DATE == target_expiration_date, :].copy()
     logger.debug(
@@ -43,6 +46,7 @@ def filter_option_df_by_expiration_date(df, target_expiration_date):
     return df
 
 
+@logger_wraps()
 def filter_option_df_by_strike(df, target_strike):
     df = df.loc[df.STRIKE == target_strike, :].copy()
     logger.debug(f"filter_option_df_by_strike: target_strike:{target_strike}")
@@ -54,6 +58,7 @@ def filter_option_df_by_strike(df, target_strike):
     return df
 
 
+@logger_wraps()
 def filter_option_df_by_strike_over_stock(df, target_strike_over_stock_prec=1.05):
     df = df.loc[
         df.STRIKE >= target_strike_over_stock_prec * df.UNDERLYING_LAST,
@@ -74,6 +79,7 @@ def filter_option_df_by_strike_over_stock(df, target_strike_over_stock_prec=1.05
     return df
 
 
+@logger_wraps()
 def filter_option_df(
     df,
     target_trade_date,

@@ -1,8 +1,10 @@
 import datetime as dt
 import pandas as pd
+from logger import logger, logger_wraps
 
 
 class Option(object):
+    @logger_wraps()
     def __init__(
         self,
         symbol="qqq",
@@ -18,6 +20,7 @@ class Option(object):
         self.expiration_date = expiration_date
 
     @classmethod
+    @logger_wraps()
     def from_data_series(cls, series, symbol="qqq"):
         return cls(
             symbol=symbol,

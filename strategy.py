@@ -4,13 +4,14 @@ from wallet import Wallet
 from option import Option
 from filter_utils import filter_option_df
 from option_operation import open_short_position_, open_long_position_
-from logger import logger
+from logger import logger, logger_wraps
 import sys
 
 # logger.add(sys.stderr, backtrace=True, diagnose=True)
 
 
 class Strategy(object):
+    @logger_wraps()
     def __init__(
         self,
         df,
@@ -52,6 +53,7 @@ long_target_strike_over_stock_prec:{long_target_strike_over_stock_prec}, daily_o
             target_strike_over_stock_prec=self.long_target_strike_over_stock_prec,
         )
 
+    @logger_wraps()
     def daily_roll(self, df, target_trade_date, ind=0):
         orig_option = self.wallet.call_options_sell[ind]
         orig_option_price_at_purchase = orig_option.option_price_at_purchase
@@ -80,7 +82,7 @@ long_target_strike_over_stock_prec:{long_target_strike_over_stock_prec}, daily_o
         )
         logger.debug(f"orig_option_price_at_purchase:{orig_option_price_at_purchase}")
         logger.debug(f"self.daily_option_prec:{self.daily_option_prec}")
-        logger.info(new_option)
+        logger.debug(new_option)
         if (  # TODO: check condition!
             updated_option.option_price_at_purchase
             <= orig_option_price_at_purchase * self.daily_option_prec
