@@ -4,13 +4,14 @@ from wallet import Wallet
 from option import Option
 from filter_utils import filter_option_df
 from option_operation import open_short_position_, open_long_position_
-from loguru import logger
+from logger import logger, logger_wraps
 import sys
 
 # logger.add(sys.stderr, backtrace=True, diagnose=True)
 
 
 class Strategy(object):
+    @logger_wraps()
     def __init__(
         self,
         df,
@@ -22,10 +23,10 @@ class Strategy(object):
         long_target_strike_over_stock_prec=1.0,
         daily_option_prec=0.5,
     ):
-        logger.info(
+        logger.debug(
             f"Strategy __init__: target_trade_date:{target_trade_date}, short_target_dte:{short_target_dte}, \
-                long_target_dte:{long_target_dte}, short_target_strike_over_stock_prec:{short_target_strike_over_stock_prec}, \
-                    long_target_strike_over_stock_prec:{long_target_strike_over_stock_prec}, daily_option_prec:{daily_option_prec}"
+long_target_dte:{long_target_dte}, short_target_strike_over_stock_prec:{short_target_strike_over_stock_prec}, \
+long_target_strike_over_stock_prec:{long_target_strike_over_stock_prec}, daily_option_prec:{daily_option_prec}"
         )
         self.df = df
         self.wallet = wallet
@@ -52,8 +53,9 @@ class Strategy(object):
             target_strike_over_stock_prec=self.long_target_strike_over_stock_prec,
         )
 
+    @logger_wraps()
     def daily_roll(self, df, target_trade_date, ind=0):
-        orig_option = self.wallet.call_options_buy[ind]
+        orig_option = self.wallet.call_options_sell[ind]
         orig_option_price_at_purchase = orig_option.option_price_at_purchase
         orig_option_expiration_date = orig_option.expiration_date
         orig_option_strike_price = orig_option.strike_price
@@ -75,17 +77,18 @@ class Strategy(object):
                 target_strike=orig_option_strike_price,
             )
         )
-        logger.info(
+        logger.debug(
             f"updated_option.option_price_at_purchase:{updated_option.option_price_at_purchase}"
         )
-        logger.info(f"orig_option_price_at_purchase:{orig_option_price_at_purchase}")
-        logger.info(f"self.daily_option_prec:{self.daily_option_prec}")
+        logger.debug(f"orig_option_price_at_purchase:{orig_option_price_at_purchase}")
+        logger.debug(f"self.daily_option_prec:{self.daily_option_prec}")
+        logger.debug(new_option)
         if (  # TODO: check condition!
             updated_option.option_price_at_purchase
             <= orig_option_price_at_purchase * self.daily_option_prec
         ):
             logger.info(f"rolling option")
-            self.wallet.roll_buy_call_option(
+            self.wallet.roll_sell_call_option(
                 new_option=new_option, update_option=updated_option, ind=ind
             )
         else:
